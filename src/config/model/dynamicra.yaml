@@ -1,0 +1,16 @@
+name: dynamicra
+method: dynamicra
+unit: id
+time: date
+value: value
+feature: feature
+outcome: Y
+covariates: ???
+treatment: W
+treatment_path: ???
+control_path: ???
+regmodel: gbr
+transmodel: mlp
+n_folds: 5
+n_forward_mc: 512
+history_window: -1
