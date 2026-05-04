@@ -5,7 +5,8 @@
 [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://docs.astral.sh/ruff/)
 
-This repository contains the implementation of "Modeling Covariate Transition for Efficient Estimation of Longitudinal Treatment Effects in Randomized Experiments."
+This repository contains the implementation of "Modeling Covariate Transition for Efficient Estimation of Longitudinal Treatment Effects in Randomized Experiments," Naoki_Chihara, Tatsushi Oka, Yasuko Matsubara, Yasushi Sakurai, Shota Yasui.
+The 43rd International Conference on Machine Learning, [ICML2026](https://icml.cc/).
 
 ## Usage
 1. Clone this repository.
@@ -36,3 +37,70 @@ This repository contains the implementation of "Modeling Covariate Transition fo
     bash bin/demo.sh -n
     ```
     - The execution log is saved in `nohup/` directory.
+
+## Minimal Example
+```python
+import numpy as np
+
+from src.models.dynamicra.model import DynamicRAEstimator
+from src.utils import build_arrays
+
+
+X, Y, W, T = build_arrays(data)
+estimator = DynamicRAEstimator(
+    method='dynamicra',
+    regmodel_name='ols',
+    transmodel_name='var',
+)
+
+results = estimator.estimate(
+    X=X,
+    Y=Y,
+    W=W,
+    times=list(range(T)),
+    treatment_path=np.ones(T),
+    control_path=np.zeros(T),
+    variance_type='moment',
+)
+
+for result in results:
+    print(
+        f"t={result['time']}: "
+        f"ATE={result['mu']:.3f}, "
+        f"95% CI=({result['ci_lower']:.3f}, {result['ci_upper']:.3f})"
+    )
+```
+
+## Input Data Format
+It expects a long-format `pandas.DataFrame` with the following columns:
+
+| Column | Default name | Type | Description |
+| --- | --- | --- | --- |
+| Unit ID | `id` | int | Experimental unit identifier. |
+| Time | `date` | int | Integer time index from `0` to `T - 1`. |
+| Feature | `feature` | str | Variable name, e.g., `Y`, `W`, `X1`, ... |
+| Value | `value` | float | Numeric value of that feature. |
+
+Required features are:
+- `Y`: outcome.
+- `W`: treatment assignment, encoded as integer arms such as `0` and `1`.
+- Covariates: all non-`Y`/`W` features are used.
+
+Example:
+```text
+id,date,feature,value
+1,0,Y,2.31
+1,0,W,0
+1,0,X1,0.42
+1,0,X2,-1.10
+1,1,Y,2.76
+1,1,W,1
+1,1,X1,0.50
+1,1,X2,-0.87
+```
+
+## Citation
+If you use this code for your research, please consider citing our paper.
+
+```bibtex
+```
